@@ -4,11 +4,29 @@ import styles from './Menu.module.scss';
 
 import { Wrapper as PopperWrapper } from '~/components/Popper';
 import MenuItem from './MenuItem';
+import Header from './Header';
+import { useState } from 'react';
 const cx = classNames.bind(styles);
 function Menu({ children, items = [] }) {
+    const [history, setHistory] = useState([{ data: items }]);
+    const currentHistory = history[history.length - 1];
+
     const renderItems = () => {
-        return items.map((item, index) => {
-            return <MenuItem key={index} data={item} />;
+        return currentHistory.data.map((item, index) => {
+            return (
+                <MenuItem
+                    key={index}
+                    data={item}
+                    onClick={() => {
+                        const isParent = !!item.children;
+
+                        if (isParent) {
+                            console.log(item.children);
+                            setHistory((pre) => [...pre, item.children]);
+                        }
+                    }}
+                />
+            );
         });
     };
     return (
@@ -18,7 +36,17 @@ function Menu({ children, items = [] }) {
             interactive
             render={(attrs) => (
                 <div className={cx('menu-list')} tabIndex="-1" {...attrs}>
-                    <PopperWrapper className={cx('menu-popper')}>{renderItems()}</PopperWrapper>
+                    <PopperWrapper className={cx('menu-popper')}>
+                        {history.length > 1 && (
+                            <Header
+                                title="Language"
+                                onBack={() => {
+                                    setHistory(history.slice(0, history.length - 1));
+                                }}
+                            />
+                        )}
+                        {renderItems()}
+                    </PopperWrapper>
                 </div>
             )}
         >
